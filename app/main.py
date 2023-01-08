@@ -4,8 +4,12 @@ import threading
 
 
 def send_pong(client_socket):
-    while client_socket.recv(1024):
-        client_socket.send(b"+PONG\r\n")
+    while True:
+        message = client_socket.recv(1024)
+        if message.lower() == 'pong':
+            client_socket.send(b"+PONG\r\n")
+        else:
+            print(message)
 
 
 def main():
