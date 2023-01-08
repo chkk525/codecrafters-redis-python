@@ -7,22 +7,26 @@ def response(client_socket):
     data = {}
     while True:
         messages = client_socket.recv(1024).decode().split('\r\n')
-        # -> ['*2', '$4', 'echo', '$5', 'world', '']
 
-        for i, message in enumerate(messages):
-            next_message = messages[i+2]
-            if message.lower() == 'ping':
-                client_socket.send(b"+PONG\r\n")
-            if message.lower() == 'echo':
-                next_message = messages[i+2]
-                # Interpolate next message into a binary value to send.
-                client_socket.send(f"+{next_message}\r\n".encode())
-            if message.lower() == 'set':
-                pass
-            if message.lower() == 'get':
-                pass
-            else:
-                pass
+        if messages and messages[0]:
+            n = int(messages[0].replace('*', ''))
+            for i in range(2, n*2 + 1, 2):
+                v = messages[i].lower()
+                if v == 'ping':
+                    client_socket.send(b"+PONG\r\n")
+                elif v == 'echo':
+                    argument = messages[i+2].lower()
+                    client_socket.send(f"+{argument}\r\n".encode())
+                elif v == 'set':
+                    key = messages[i+2]
+                    value = messages[i+4]
+                    data[key] = value
+                    client_socket.send(b"+OK\r\n")
+                elif v == 'get':
+                    key = messages[i+2]
+                    client_socket.send(f"+{value}\r\n".encode())
+                else:
+                    pass
 
 
 def main():
